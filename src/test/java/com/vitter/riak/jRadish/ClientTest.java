@@ -1,9 +1,7 @@
 package com.vitter.riak.jRadish;
 
 import static org.junit.Assert.*;
-
 import java.util.ArrayList;
-
 import org.junit.Test;
 
 public class ClientTest {
@@ -39,7 +37,6 @@ public class ClientTest {
 		try
 		{
 			Long result = client.getCounter("craigscounter");
-			if (result == 0) fail();
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -51,7 +48,20 @@ public class ClientTest {
 	@Test
 	public void testAddToSet() {
 		Client client = new Client();
-		assertEquals(true, client.addToSet("cities", new ArrayList<String>()) );
+		ArrayList<String> test = new ArrayList<String>();
+		test.add("Chicago");
+		test.add("New York");
+		assertEquals(true, client.addToSet("cities", test) );
+	}
+	
+	@Test
+	public void testRemoveFromSet() {
+		Client client = new Client();
+		ArrayList<String> addTo = new ArrayList<String>();
+		addTo.add("val1");
+		addTo.add("val2"); 
+		client.addToSet("removefrom", addTo);
+		assertEquals(true, client.removeFromSet("removefrom", addTo) );
 	}
 	
 	

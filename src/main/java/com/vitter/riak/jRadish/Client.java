@@ -12,11 +12,14 @@ import com.basho.riak.client.api.cap.Quorum;
 import com.basho.riak.client.api.commands.datatypes.CounterUpdate;
 import com.basho.riak.client.api.commands.datatypes.FetchCounter;
 import com.basho.riak.client.api.commands.datatypes.FetchSet;
+import com.basho.riak.client.api.commands.datatypes.SetUpdate;
 import com.basho.riak.client.api.commands.datatypes.UpdateCounter;
+import com.basho.riak.client.api.commands.datatypes.UpdateSet;
 import com.basho.riak.client.api.commands.kv.DeleteValue;
 import com.basho.riak.client.api.commands.kv.FetchValue;
 import com.basho.riak.client.api.commands.kv.StoreValue;
 import com.basho.riak.client.api.commands.kv.StoreValue.Option;
+import com.basho.riak.client.api.commands.datatypes.Context;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakNode;
 import com.basho.riak.client.core.query.Location;
@@ -25,17 +28,18 @@ import com.basho.riak.client.core.query.RiakObject;
 import com.basho.riak.client.core.query.crdt.types.RiakCounter;
 import com.basho.riak.client.core.util.BinaryValue;
 
+
 public class Client {
 	
 	private String[] nodesArray = {"127.0.0.1"};
 	private String stringBucketType = "jradish";
 	private String stringBucket = "string";
-	private String mapBucketType = "jradish-map";
-	private String mapBucket = "hash";
 	private String counterBucketType = "jradish-counter";
 	private String counterBucket = "counter";
 	private String setBucketType = "jradish-set";
 	private String setBucket = "set";
+	private String mapBucketType = "jradish-map";
+	private String mapBucket = "hash";
 	private int R_VALUE = 2;
 	private int W_VALUE = 2;
 	private int READ_RETRY_COUNT = 5;
@@ -153,6 +157,13 @@ public class Client {
 			connect();
 			try {
 				Location location = new Location(new Namespace(counterBucketType, counterBucket), key);
+				
+				// Check if counter exists first, throw null if not since FetchCounter
+				// will return 0 if the key doesn't exist
+				FetchValue fv = new FetchValue.Builder(location).build();
+				FetchValue.Response keyResponse = fetch(fv);
+	            if (keyResponse.isNotFound()) throw null;
+				
 				FetchCounter fetch = new FetchCounter
 					.Builder(location)
 		        	.build();
@@ -174,15 +185,64 @@ public class Client {
 	}
 	
 	
-	/**
-	 * 
-	 * @param key
-	 * @param values
-	 * @return
-	 */
+
 	public boolean addToSet(String key, ArrayList<String> values) {
+		return setOperations( key, values, true );
+	}
+
+	public boolean removeFromSet(String key, ArrayList<String> values) {
+		return setOperations( key, values, false );
+	}
+	
+	private boolean setOperations(String key, ArrayList<String> values, boolean add) {
 		if (key != null && values.size() > 0) {
-			
+			connect();
+			try {
+				Location location = new Location(new Namespace(setBucketType, setBucket), key);
+				SetUpdate su = new SetUpdate();
+				for (String value : values) {
+					if (add) {
+						su.add(value);
+					}
+					else {
+						su.remove(value);
+					}
+				}
+				
+				Context ctx = null;
+				if (!add) {
+					FetchSet fetch = new FetchSet
+						.Builder(location)
+			        	.build();
+					FetchSet.Response response = riakClient.execute(fetch);
+					ctx = response.getContext();
+					if (response.getDatatype().view().isEmpty()) return false;
+				}
+				
+				UpdateSet update = null;
+				if (ctx != null) {
+					update = new UpdateSet
+						.Builder(location, su)
+						.withContext(ctx)
+						.build();
+				}
+				else
+				{
+					update = new UpdateSet
+						.Builder(location, su)
+						.build();
+				}
+				
+				riakClient.execute(update);
+				return true;
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+				return false;
+			}
+			finally {
+				closeConnection();
+			}
 		}
 		return false;
 	}
@@ -286,10 +346,7 @@ public class Client {
 		}
 		return null;
 	}
-	
-	
-	
-	
+
 	
 	private void connect() {
 		final RiakNode.Builder builder = new RiakNode.Builder();
