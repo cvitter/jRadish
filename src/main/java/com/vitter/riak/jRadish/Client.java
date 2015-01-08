@@ -1,14 +1,17 @@
 package com.vitter.riak.jRadish;
 
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.api.cap.Quorum;
 import com.basho.riak.client.api.commands.datatypes.CounterUpdate;
 import com.basho.riak.client.api.commands.datatypes.FetchCounter;
+import com.basho.riak.client.api.commands.datatypes.FetchSet;
 import com.basho.riak.client.api.commands.datatypes.UpdateCounter;
 import com.basho.riak.client.api.commands.kv.DeleteValue;
 import com.basho.riak.client.api.commands.kv.FetchValue;
@@ -114,7 +117,7 @@ public class Client {
 	 * @param increment
 	 * @return
 	 */
-	public boolean setCounter(String key, Long increment) {
+	public boolean incrementCounter(String key, Long increment) {
 		if (key != null) {
 			connect();
 			try {
@@ -167,6 +170,57 @@ public class Client {
 		}
 		else {
 			throw null;
+		}
+	}
+	
+	
+	/**
+	 * 
+	 * @param key
+	 * @param values
+	 * @return
+	 */
+	public boolean addToSet(String key, ArrayList<String> values) {
+		if (key != null && values.size() > 0) {
+			
+		}
+		return false;
+	}
+	
+	
+	
+	/**
+	 * 
+	 * @param key
+	 * @return
+	 */
+	public ArrayList<String> getSet(String key) {
+		if (key != null) {
+			connect();
+			try {
+				Location location = new Location(new Namespace(setBucketType, setBucket), key);
+				FetchSet fetch = new FetchSet
+					.Builder(location)
+		        	.build();
+				FetchSet.Response response = riakClient.execute(fetch);
+				Set<BinaryValue> set = response.getDatatype().view();
+				if (set.isEmpty()) return null;
+				ArrayList<String> returnSet = new ArrayList<String>();
+				for (BinaryValue member : set) {
+					returnSet.add(member.toString());
+				}
+				return returnSet;
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+				return null;
+			}
+			finally {
+				closeConnection();
+			}
+		}
+		else {
+			return null;
 		}
 	}
 	

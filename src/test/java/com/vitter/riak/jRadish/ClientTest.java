@@ -2,7 +2,8 @@ package com.vitter.riak.jRadish;
 
 import static org.junit.Assert.*;
 
-import org.junit.Assert;
+import java.util.ArrayList;
+
 import org.junit.Test;
 
 public class ClientTest {
@@ -27,22 +28,44 @@ public class ClientTest {
 	}
 	
 	@Test
-	public void testSetCounter() {
+	public void testIncrementCounter() {
 		Client client = new Client();
-		assertEquals(true, client.setCounter("craigscounter", 2L) );
+		assertEquals(true, client.incrementCounter("craigscounter", 2L) );
 	}
 	
 	@Test
 	public void testGetCounter() {
 		Client client = new Client();
-		Long result = client.getCounter("craigscounter");
-		
+		try
+		{
+			Long result = client.getCounter("craigscounter");
+			if (result == 0) fail();
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			fail();
+		}
 	}
+
+	
+	@Test
+	public void testAddToSet() {
+		Client client = new Client();
+		assertEquals(true, client.addToSet("cities", new ArrayList<String>()) );
+	}
+	
+	
+	@Test
+	public void testGetEmptySet() {
+		Client client = new Client();
+		assertEquals(null, client.getSet("emptyset") );
+	}
+	
 
 	@Test
 	public void testDeleteCounter() {
 		Client client = new Client();
-		client.setCounter("countertodelete", 2L);
+		client.incrementCounter("countertodelete", 2L);
 		assertEquals(true, client.deleteCounter("countertodelete") );
 	}
 
