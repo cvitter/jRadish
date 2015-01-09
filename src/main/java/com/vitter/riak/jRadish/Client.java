@@ -47,6 +47,10 @@ public class Client {
 	private RiakCluster riakCluster;
 	
 	
+	public Client() {
+		connect();
+	}
+
 
 	/**
 	 * set - stores a string under the specified key
@@ -56,7 +60,6 @@ public class Client {
 	 */
 	public boolean set(String key, String value) {
 		if (key != null && value != null) {
-			connect();
 			try {
 				Location location = new Location(new Namespace(stringBucketType, stringBucket), key);
 				RiakObject object = new RiakObject()
@@ -73,9 +76,6 @@ public class Client {
 				e.printStackTrace();
 				return false;
 			}
-			finally {
-				closeConnection();
-			}
 			return true;
 		}
 		else {
@@ -91,7 +91,6 @@ public class Client {
 	 */
 	public String get(String key) {
 		if (key != null) {
-			connect();
 			try {
 				Location location = new Location(new Namespace(stringBucketType, stringBucket), key);
 				final FetchValue fv = new FetchValue.Builder(location)
@@ -104,9 +103,6 @@ public class Client {
 			catch (Exception e) {
 				e.printStackTrace();
 				return null;
-			}
-			finally {
-				closeConnection();
 			}
 		}
 		else {
@@ -123,7 +119,6 @@ public class Client {
 	 */
 	public boolean incrementCounter(String key, Long increment) {
 		if (key != null) {
-			connect();
 			try {
 				Location location = new Location(new Namespace(counterBucketType, counterBucket), key);
 				CounterUpdate cu = new CounterUpdate(increment);
@@ -135,9 +130,6 @@ public class Client {
 			catch (Exception e) {
 				e.printStackTrace();
 				return false;
-			}
-			finally {
-				closeConnection();
 			}
 			return true;
 		}
@@ -154,7 +146,6 @@ public class Client {
 	 */
 	public Long getCounter(String key) {
 		if (key != null) {
-			connect();
 			try {
 				Location location = new Location(new Namespace(counterBucketType, counterBucket), key);
 				
@@ -175,9 +166,6 @@ public class Client {
 				e.printStackTrace();
 				throw null;
 			}
-			finally {
-				closeConnection();
-			}
 		}
 		else {
 			throw null;
@@ -196,7 +184,6 @@ public class Client {
 	
 	private boolean setOperations(String key, ArrayList<String> values, boolean add) {
 		if (key != null && values.size() > 0) {
-			connect();
 			try {
 				Location location = new Location(new Namespace(setBucketType, setBucket), key);
 				SetUpdate su = new SetUpdate();
@@ -240,9 +227,6 @@ public class Client {
 				e.printStackTrace();
 				return false;
 			}
-			finally {
-				closeConnection();
-			}
 		}
 		return false;
 	}
@@ -256,7 +240,6 @@ public class Client {
 	 */
 	public ArrayList<String> getSet(String key) {
 		if (key != null) {
-			connect();
 			try {
 				Location location = new Location(new Namespace(setBucketType, setBucket), key);
 				FetchSet fetch = new FetchSet
@@ -274,9 +257,6 @@ public class Client {
 			catch (Exception e) {
 				e.printStackTrace();
 				return null;
-			}
-			finally {
-				closeConnection();
 			}
 		}
 		else {
@@ -304,16 +284,14 @@ public class Client {
 	
 	private boolean delete(String type, String bucket, String key) {
 		if (key != null) {
-			connect();
 			try {
 				final Location location = new Location(new Namespace(type, bucket), key);
 				final DeleteValue dv = new DeleteValue.Builder(location).build();
 				riakClient.execute(dv);
-			} catch (Exception e) {
+			} 
+			catch (Exception e) {
 				e.printStackTrace();
 				return false;
-			} finally {
-				closeConnection();
 			}
 			return true;
 		} else {
