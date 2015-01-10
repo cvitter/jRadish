@@ -1,13 +1,9 @@
 package com.vitter.riak.jRadish;
 
-import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
-import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.api.cap.Quorum;
 import com.basho.riak.client.api.commands.datatypes.CounterUpdate;
 import com.basho.riak.client.api.commands.datatypes.FetchCounter;
@@ -20,8 +16,6 @@ import com.basho.riak.client.api.commands.kv.FetchValue;
 import com.basho.riak.client.api.commands.kv.StoreValue;
 import com.basho.riak.client.api.commands.kv.StoreValue.Option;
 import com.basho.riak.client.api.commands.datatypes.Context;
-import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakNode;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.RiakObject;
@@ -30,25 +24,11 @@ import com.basho.riak.client.core.util.BinaryValue;
 
 
 public class Client {
-	
-	private String[] nodesArray = {"127.0.0.1"};
-	private String stringBucketType = "jradish";
-	private String stringBucket = "string";
-	private String counterBucketType = "jradish-counter";
-	private String counterBucket = "counter";
-	private String setBucketType = "jradish-set";
-	private String setBucket = "set";
-	private String mapBucketType = "jradish-map";
-	private String mapBucket = "hash";
-	private int R_VALUE = 2;
-	private int W_VALUE = 2;
-	private int READ_RETRY_COUNT = 5;
-	private RiakClient riakClient;
-	private RiakCluster riakCluster;
-	
+
+	private Connection conn;
 	
 	public Client() {
-		connect();
+		conn = new Connection();
 	}
 
 
@@ -61,16 +41,16 @@ public class Client {
 	public boolean set(String key, String value) {
 		if (key != null && value != null) {
 			try {
-				Location location = new Location(new Namespace(stringBucketType, stringBucket), key);
+				Location location = new Location(new Namespace(conn.getStringBucketType(), conn.getStringBucket()), key);
 				RiakObject object = new RiakObject()
 					.setContentType("text/plain")
 					.setValue(BinaryValue.create(value));
 				StoreValue store = new StoreValue
 					.Builder(object)
 					.withLocation(location)
-            		.withOption(Option.W, new Quorum(W_VALUE))
+            		.withOption(Option.W, new Quorum(conn.getWValue()))
             		.build();
-				riakClient.execute(store);
+				conn.getRiakClient().execute(store);
 			}
 			catch (Exception e) {
 				e.printStackTrace();
@@ -92,9 +72,9 @@ public class Client {
 	public String get(String key) {
 		if (key != null) {
 			try {
-				Location location = new Location(new Namespace(stringBucketType, stringBucket), key);
+				Location location = new Location(new Namespace(conn.getStringBucketType(), conn.getStringBucket()), key);
 				final FetchValue fv = new FetchValue.Builder(location)
-            		.withOption(FetchValue.Option.R, new Quorum(R_VALUE))
+            		.withOption(FetchValue.Option.R, new Quorum(conn.getRValue()))
             		.build();
 				final FetchValue.Response response = fetch(fv);
 	            final RiakObject obj = response.getValue(RiakObject.class);
@@ -120,12 +100,12 @@ public class Client {
 	public boolean incrementCounter(String key, Long increment) {
 		if (key != null) {
 			try {
-				Location location = new Location(new Namespace(counterBucketType, counterBucket), key);
+				Location location = new Location(new Namespace(conn.getCounterBucketType(), conn.getCounterBucket()), key);
 				CounterUpdate cu = new CounterUpdate(increment);
 				UpdateCounter update = new UpdateCounter
 						.Builder(location, cu)
 		        	.build();
-				riakClient.execute(update);
+				conn.getRiakClient().execute(update);
 			}
 			catch (Exception e) {
 				e.printStackTrace();
@@ -147,7 +127,7 @@ public class Client {
 	public Long getCounter(String key) {
 		if (key != null) {
 			try {
-				Location location = new Location(new Namespace(counterBucketType, counterBucket), key);
+				Location location = new Location(new Namespace(conn.getCounterBucketType(), conn.getCounterBucket()), key);
 				
 				// Check if counter exists first, throw null if not since FetchCounter
 				// will return 0 if the key doesn't exist
@@ -158,7 +138,7 @@ public class Client {
 				FetchCounter fetch = new FetchCounter
 					.Builder(location)
 		        	.build();
-				FetchCounter.Response response = riakClient.execute(fetch);
+				FetchCounter.Response response = conn.getRiakClient().execute(fetch);
 				RiakCounter counter = response.getDatatype();
 				return counter.view();
 			}
@@ -185,7 +165,7 @@ public class Client {
 	private boolean setOperations(String key, ArrayList<String> values, boolean add) {
 		if (key != null && values.size() > 0) {
 			try {
-				Location location = new Location(new Namespace(setBucketType, setBucket), key);
+				Location location = new Location(new Namespace(conn.getSetBucketType(), conn.getSetBucket()), key);
 				SetUpdate su = new SetUpdate();
 				for (String value : values) {
 					if (add) {
@@ -201,7 +181,7 @@ public class Client {
 					FetchSet fetch = new FetchSet
 						.Builder(location)
 			        	.build();
-					FetchSet.Response response = riakClient.execute(fetch);
+					FetchSet.Response response = conn.getRiakClient().execute(fetch);
 					ctx = response.getContext();
 					if (response.getDatatype().view().isEmpty()) return false;
 				}
@@ -220,7 +200,7 @@ public class Client {
 						.build();
 				}
 				
-				riakClient.execute(update);
+				conn.getRiakClient().execute(update);
 				return true;
 			}
 			catch (Exception e) {
@@ -241,11 +221,11 @@ public class Client {
 	public ArrayList<String> getSet(String key) {
 		if (key != null) {
 			try {
-				Location location = new Location(new Namespace(setBucketType, setBucket), key);
+				Location location = new Location(new Namespace(conn.getSetBucketType(), conn.getStringBucket()), key);
 				FetchSet fetch = new FetchSet
 					.Builder(location)
 		        	.build();
-				FetchSet.Response response = riakClient.execute(fetch);
+				FetchSet.Response response = conn.getRiakClient().execute(fetch);
 				Set<BinaryValue> set = response.getDatatype().view();
 				if (set.isEmpty()) return null;
 				ArrayList<String> returnSet = new ArrayList<String>();
@@ -267,19 +247,19 @@ public class Client {
 	
 	
 	public boolean deleteString(String key) {
-		return delete(stringBucketType, stringBucket, key);
+		return delete(conn.getSetBucketType(), conn.getStringBucket(), key);
 	}
 	
 	public boolean deleteCounter(String key) {
-		return delete(counterBucketType, counterBucket, key);
+		return delete(conn.getCounterBucketType(), conn.getCounterBucket(), key);
 	}
 	
 	public boolean deleteSet(String key) {
-		return delete(setBucketType, setBucket, key);
+		return delete(conn.getSetBucketType(), conn.getSetBucket(), key);
 	}
 	
 	public boolean deleteMap(String key) {
-		return delete(mapBucketType, mapBucket, key);
+		return delete(conn.getMapBucketType(), conn.getMapBucket(), key);
 	}
 	
 	private boolean delete(String type, String bucket, String key) {
@@ -287,7 +267,7 @@ public class Client {
 			try {
 				final Location location = new Location(new Namespace(type, bucket), key);
 				final DeleteValue dv = new DeleteValue.Builder(location).build();
-				riakClient.execute(dv);
+				conn.getRiakClient().execute(dv);
 			} 
 			catch (Exception e) {
 				e.printStackTrace();
@@ -301,9 +281,6 @@ public class Client {
 	
 	
 	
-	
-	
-	
 	/**
 	 * fetch
 	 * @param fv
@@ -312,8 +289,8 @@ public class Client {
 	private FetchValue.Response fetch(FetchValue fv) {
 		try {
 			FetchValue.Response response = null;
-			for (int i = 0; i < READ_RETRY_COUNT; i++) {
-				response = riakClient.execute(fv);
+			for (int i = 0; i < conn.getReadRetry(); i++) {
+				response = conn.getRiakClient().execute(fv);
 				if (response.isNotFound() == false) break;
 			}
 			return response;
@@ -326,27 +303,9 @@ public class Client {
 	}
 
 	
-	private void connect() {
-		final RiakNode.Builder builder = new RiakNode.Builder();
-        List<RiakNode> nodes;
-		try {
-			nodes = RiakNode.Builder.buildNodes(builder, Arrays.asList(nodesArray));
-			riakCluster = new RiakCluster.Builder(nodes).build();
-	        riakCluster.start();
-	        riakClient = new RiakClient(riakCluster);
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-		}
-	}
-	
 	public void closeConnection()
 	{
-		try {
-			riakCluster.shutdown();
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
+		conn.cleanup();
 	}
 
 }

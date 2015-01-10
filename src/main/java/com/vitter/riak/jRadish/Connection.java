@@ -73,7 +73,7 @@ public class Connection {
 				mapBucket = defaultProps.getProperty("MAP_BUCKET","map");
 				rvalue = Integer.parseInt( defaultProps.getProperty("R_VALUE", "2") );
 				wvalue = Integer.parseInt( defaultProps.getProperty("W_VALUE", "2") );
-				readRetry = Integer.parseInt( defaultProps.getProperty("READ_RETRY", "5") );			
+				readRetry = Integer.parseInt( defaultProps.getProperty("READ_RETRY", "5") );
 			}
 		}
 		catch (Exception e) {
@@ -85,7 +85,7 @@ public class Connection {
 	
 	
 	private File getPropertiesFile() {
-		File f = new File("riak/target/riak.properties");
+		File f = new File("target/riak.properties");
 		if(f.exists() && !f.isDirectory()) {
 			return f;
 		}
