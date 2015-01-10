@@ -67,7 +67,7 @@ public class Client {
 	/**
 	 * get - returns a string stored under the specified key
 	 * @param key
-	 * @return
+	 * @return string
 	 */
 	public String get(String key) {
 		if (key != null) {
@@ -92,10 +92,10 @@ public class Client {
 	
 	
 	/**
-	 * 
+	 * incrementCounter - increments specified counter
 	 * @param key
 	 * @param increment
-	 * @return
+	 * @return true if successful
 	 */
 	public boolean incrementCounter(String key, Long increment) {
 		if (key != null) {
@@ -120,9 +120,9 @@ public class Client {
 	
 	
 	/**
-	 * 
+	 * getCounter - retrieves value of a counter at a specified key
 	 * @param key
-	 * @return
+	 * @return value of counter as a long if the key exists or null
 	 */
 	public Long getCounter(String key) {
 		if (key != null) {
@@ -153,11 +153,22 @@ public class Client {
 	}
 	
 	
-
+	/**
+	 * addToSet - Add the contents of an ArrayList to the specified set
+	 * @param key
+	 * @param values
+	 * @return true if successful
+	 */
 	public boolean addToSet(String key, ArrayList<String> values) {
 		return setOperations( key, values, true );
 	}
 
+	/**
+	 * removeFromSet - Remove the contents of an ArrayList from the specified set
+	 * @param key
+	 * @param values
+	 * @return true if successful
+	 */
 	public boolean removeFromSet(String key, ArrayList<String> values) {
 		return setOperations( key, values, false );
 	}
@@ -209,14 +220,13 @@ public class Client {
 			}
 		}
 		return false;
-	}
-	
+	}	
 	
 	
 	/**
-	 * 
+	 * getSet - Returns the contents of a set as an ArrayList
 	 * @param key
-	 * @return
+	 * @return ArrayList<String>
 	 */
 	public ArrayList<String> getSet(String key) {
 		if (key != null) {
@@ -245,19 +255,38 @@ public class Client {
 	}
 	
 	
-	
+	/**
+	 * deleteString - Deletes the value found at the specified key
+	 * @param key
+	 * @return true if successful
+	 */
 	public boolean deleteString(String key) {
 		return delete(conn.getSetBucketType(), conn.getStringBucket(), key);
 	}
 	
+	/**
+	 * deleteCounter - Deletes the value found at the specified key
+	 * @param key
+	 * @return true if successful
+	 */
 	public boolean deleteCounter(String key) {
 		return delete(conn.getCounterBucketType(), conn.getCounterBucket(), key);
 	}
 	
+	/**
+	 * deleteSet - Deletes the value found at the specified key
+	 * @param key
+	 * @return true if successful
+	 */
 	public boolean deleteSet(String key) {
 		return delete(conn.getSetBucketType(), conn.getSetBucket(), key);
 	}
 	
+	/**
+	 * deleteMap - Deletes the value found at the specified key
+	 * @param key
+	 * @return true if successful
+	 */
 	public boolean deleteMap(String key) {
 		return delete(conn.getMapBucketType(), conn.getMapBucket(), key);
 	}
@@ -281,11 +310,7 @@ public class Client {
 	
 	
 	
-	/**
-	 * fetch
-	 * @param fv
-	 * @return FetchValue.Response
-	 */
+
 	private FetchValue.Response fetch(FetchValue fv) {
 		try {
 			FetchValue.Response response = null;

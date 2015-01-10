@@ -9,7 +9,6 @@ import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
-
 import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakNode;
@@ -27,7 +26,7 @@ public class Connection {
 	private String mapBucket = "hash";
 	private int rvalue = 2;
 	private int wvalue = 2;
-	private int readRetry = 5;
+	private int readRetry = 1;
 	private RiakClient riakClient;
 	private RiakCluster riakCluster;
 	
@@ -35,6 +34,17 @@ public class Connection {
 	public Connection() {
 		loadProperties();
 		connect();
+	}
+	
+	
+	public void cleanup()
+	{
+		try {
+			riakCluster.shutdown();
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	
@@ -103,19 +113,8 @@ public class Connection {
 		}
 	}
 
-	public void cleanup()
-	{
-		try {
-			riakCluster.shutdown();
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-
 	
-	// Public Getters for Connection Below
+	// Public Getters for the Connection Class
 
 	public String getStringBucketType() {
 		return stringBucketType;
