@@ -1,9 +1,7 @@
 package com.vitter.riak.jRadish;
 
 import static org.junit.Assert.*;
-
 import java.util.ArrayList;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,12 +21,12 @@ public class ClientTest {
 	}
 
 	@Test
-	public void testSet() {
+	public void testSetString() {
 		assertEquals(true, client.set("user:craigvitter:id", "craigvitter") );
 	}
 
 	@Test
-	public void testGet() {
+	public void testGetString() {
 		assertEquals("craigvitter", client.get("user:craigvitter:id") );
 	}
 	
@@ -53,6 +51,13 @@ public class ClientTest {
 			e.printStackTrace();
 			fail();
 		}
+	}
+	
+	
+	@Test
+	public void testDeleteCounter() {
+		client.incrementCounter("countertodelete", 2L);
+		assertEquals(true, client.deleteCounter("countertodelete") );
 	}
 
 	
@@ -79,11 +84,17 @@ public class ClientTest {
 		assertEquals(null, client.getSet("emptyset") );
 	}
 	
-
+	
 	@Test
-	public void testDeleteCounter() {
-		client.incrementCounter("countertodelete", 2L);
-		assertEquals(true, client.deleteCounter("countertodelete") );
+	public void testDeleteSet() {
+		ArrayList<String> test = new ArrayList<String>();
+		test.add("Chicago");
+		test.add("New York");
+		client.addToSet("settodelete", test);
+		assertEquals(true, client.deleteSet("settodelete") );
 	}
+	
+
+
 
 }
