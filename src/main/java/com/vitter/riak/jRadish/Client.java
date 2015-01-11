@@ -1,6 +1,8 @@
 package com.vitter.riak.jRadish;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
@@ -8,8 +10,11 @@ import com.basho.riak.client.api.cap.Quorum;
 import com.basho.riak.client.api.commands.datatypes.CounterUpdate;
 import com.basho.riak.client.api.commands.datatypes.FetchCounter;
 import com.basho.riak.client.api.commands.datatypes.FetchSet;
+import com.basho.riak.client.api.commands.datatypes.MapUpdate;
+import com.basho.riak.client.api.commands.datatypes.RegisterUpdate;
 import com.basho.riak.client.api.commands.datatypes.SetUpdate;
 import com.basho.riak.client.api.commands.datatypes.UpdateCounter;
+import com.basho.riak.client.api.commands.datatypes.UpdateMap;
 import com.basho.riak.client.api.commands.datatypes.UpdateSet;
 import com.basho.riak.client.api.commands.kv.DeleteValue;
 import com.basho.riak.client.api.commands.kv.FetchValue;
@@ -253,6 +258,41 @@ public class Client {
 			return null;
 		}
 	}
+	
+	
+	
+	/**
+	 * mapAddUpdateRegisters - Adds or updates registers in the specified map
+	 * @param key
+	 * @param values
+	 * @return true if successful
+	 */
+	public boolean mapAddUpdateRegisters(String key, Map<String,String> values) {
+		if (key != null && values.size() > 0) {
+			try {
+				Location location = new Location(new Namespace(conn.getMapBucketType(), conn.getMapBucket()), key);
+				MapUpdate mu = new MapUpdate();
+				for (Map.Entry<String, String> entry : values.entrySet()) {
+					mu.update(entry.getKey(), new RegisterUpdate(entry.getValue()));
+				}
+		        UpdateMap update = new UpdateMap
+		        	.Builder(location, mu)
+		        	.build();
+		        conn.getRiakClient().execute(update);
+				return true;
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+				return false;
+			}
+		}
+		return false;
+	}
+	
+	
+	
+	
+	
 	
 	
 	/**

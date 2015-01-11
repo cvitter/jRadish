@@ -1,7 +1,11 @@
 package com.vitter.riak.jRadish;
 
 import static org.junit.Assert.*;
+
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -95,6 +99,13 @@ public class ClientTest {
 	}
 	
 
+	@Test
+	public void testMapAddUpdateRegisters() {
+		Map<String, String> map = new HashMap<String,String>();
+		map.put("username", "testuser");
+		map.put("emal", "test@user.email");
+		assertEquals(true, client.mapAddUpdateRegisters("myawesomemap", map) );
+	}
 
 
 }
