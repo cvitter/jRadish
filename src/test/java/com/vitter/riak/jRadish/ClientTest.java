@@ -103,9 +103,16 @@ public class ClientTest {
 	public void testMapAddUpdateRegisters() {
 		Map<String, String> map = new HashMap<String,String>();
 		map.put("username", "testuser");
-		map.put("emal", "test@user.email");
+		map.put("email", "test@user.email");
 		assertEquals(true, client.mapAddUpdateRegisters("myawesomemap", map) );
 	}
 
+	@Test
+	public void testGetRegisters() {
+		ArrayList<String> test = new ArrayList<String>();
+		test.add("username");
+		test.add("email");
+		assertEquals(2, client.mapGetRegisters("myawesomemap", test).size());
+	}
 
 }

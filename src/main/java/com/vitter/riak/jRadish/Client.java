@@ -9,6 +9,7 @@ import java.util.concurrent.ExecutionException;
 import com.basho.riak.client.api.cap.Quorum;
 import com.basho.riak.client.api.commands.datatypes.CounterUpdate;
 import com.basho.riak.client.api.commands.datatypes.FetchCounter;
+import com.basho.riak.client.api.commands.datatypes.FetchMap;
 import com.basho.riak.client.api.commands.datatypes.FetchSet;
 import com.basho.riak.client.api.commands.datatypes.MapUpdate;
 import com.basho.riak.client.api.commands.datatypes.RegisterUpdate;
@@ -25,6 +26,8 @@ import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.RiakObject;
 import com.basho.riak.client.core.query.crdt.types.RiakCounter;
+import com.basho.riak.client.core.query.crdt.types.RiakMap;
+import com.basho.riak.client.core.query.crdt.types.RiakRegister;
 import com.basho.riak.client.core.util.BinaryValue;
 
 
@@ -287,6 +290,33 @@ public class Client {
 			}
 		}
 		return false;
+	}
+	
+	
+	/**
+	 * getRegisters - Get one or more register from a map
+	 * @param key
+	 * @param registers
+	 * @return Map<String, String> containing registers and their values
+	 */
+	public Map<String, String> mapGetRegisters(String key, ArrayList<String> registers) {
+		Map<String, String> returnVal = new HashMap<String, String>();
+		
+		Location location = new Location(new Namespace(conn.getMapBucketType(), conn.getMapBucket()), key);
+		FetchMap fetch = new FetchMap.Builder(location).build();
+		FetchMap.Response response;
+		try {
+			response = conn.getRiakClient().execute(fetch);
+			RiakMap map = response.getDatatype();
+			for (String register : registers)
+			{
+				returnVal.put(register, map.getRegister(register).toString());
+			}
+			return returnVal;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 	
 	
