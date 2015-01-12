@@ -127,5 +127,14 @@ public class ClientTest {
 		remove.add("reg2");
 		assertEquals(true, client.mapRemoveRegisters("removeregisters", remove));
 	}
+	
+	
+	@Test
+	public void testMapAddUpdateFlags() {
+		Map<String, Boolean> map = new HashMap<String,Boolean>();
+		map.put("true", true);
+		map.put("false", false);
+		assertEquals(true, client.mapAddUpdateFlags("mapwithflags", map) );
+	}
 
 }

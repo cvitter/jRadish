@@ -11,6 +11,7 @@ import com.basho.riak.client.api.commands.datatypes.CounterUpdate;
 import com.basho.riak.client.api.commands.datatypes.FetchCounter;
 import com.basho.riak.client.api.commands.datatypes.FetchMap;
 import com.basho.riak.client.api.commands.datatypes.FetchSet;
+import com.basho.riak.client.api.commands.datatypes.FlagUpdate;
 import com.basho.riak.client.api.commands.datatypes.MapUpdate;
 import com.basho.riak.client.api.commands.datatypes.RegisterUpdate;
 import com.basho.riak.client.api.commands.datatypes.SetUpdate;
@@ -358,6 +359,35 @@ public class Client {
 		else {		
 			return false;
 		}
+	}
+	
+	
+	/**
+	 * mapAddUpdateFlags - 
+	 * @param key
+	 * @param values
+	 * @return
+	 */
+	public boolean mapAddUpdateFlags(String key, Map<String,Boolean> values) {
+		if (key != null && values.size() > 0) {
+			try {
+				Location location = new Location(new Namespace(conn.getMapBucketType(), conn.getMapBucket()), key);
+				MapUpdate mu = new MapUpdate();
+				for (Map.Entry<String, Boolean> entry : values.entrySet()) {
+					mu.update(entry.getKey(), new FlagUpdate(entry.getValue()));
+				}
+		        UpdateMap update = new UpdateMap
+		        	.Builder(location, mu)
+		        	.build();
+		        conn.getRiakClient().execute(update);
+				return true;
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+				return false;
+			}
+		}
+		return false;
 	}
 	
 	
