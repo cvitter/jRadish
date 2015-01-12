@@ -300,22 +300,63 @@ public class Client {
 	 * @return Map<String, String> containing registers and their values
 	 */
 	public Map<String, String> mapGetRegisters(String key, ArrayList<String> registers) {
-		Map<String, String> returnVal = new HashMap<String, String>();
-		
-		Location location = new Location(new Namespace(conn.getMapBucketType(), conn.getMapBucket()), key);
-		FetchMap fetch = new FetchMap.Builder(location).build();
-		FetchMap.Response response;
-		try {
-			response = conn.getRiakClient().execute(fetch);
-			RiakMap map = response.getDatatype();
-			for (String register : registers)
-			{
-				returnVal.put(register, map.getRegister(register).toString());
+		if (key != null && registers.size() > 0) {
+			Map<String, String> returnVal = new HashMap<String, String>();
+
+			Location location = new Location(new Namespace(conn.getMapBucketType(), conn.getMapBucket()), key);
+			FetchMap fetch = new FetchMap.Builder(location).build();
+			FetchMap.Response response;
+			try {
+				response = conn.getRiakClient().execute(fetch);
+				RiakMap map = response.getDatatype();
+				for (String register : registers)
+				{
+					returnVal.put(register, map.getRegister(register).toString());
+				}
+				return returnVal;
+			} catch (Exception e) {
+				e.printStackTrace();
+				return null;
 			}
-			return returnVal;
-		} catch (Exception e) {
-			e.printStackTrace();
+		} else {
 			return null;
+		}
+	}
+	
+	
+	/**
+	 * mapRemoveRegisters - Remove one or more register from a map
+	 * @param key
+	 * @param registers
+	 * @return true if successful
+	 */
+	public boolean mapRemoveRegisters(String key, ArrayList<String> registers) {
+		if (key != null && registers.size() > 0) {
+			Location location = new Location(new Namespace(conn.getMapBucketType(), conn.getMapBucket()), key);
+			FetchMap fetch = new FetchMap
+				.Builder(location)
+	        	.build();
+			try {
+				FetchMap.Response response = conn.getRiakClient().execute(fetch);
+				Context ctx = response.getContext();
+				MapUpdate mapUpdate = new MapUpdate();
+				for (String register : registers) {
+					mapUpdate.removeRegister(register);
+				}
+				UpdateMap update = new UpdateMap
+					.Builder(location, mapUpdate)
+		        	.withContext(ctx)
+		        	.build();
+				conn.getRiakClient().execute(update);
+				return true;
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+				return false;
+			}
+		}
+		else {		
+			return false;
 		}
 	}
 	

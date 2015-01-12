@@ -114,5 +114,18 @@ public class ClientTest {
 		test.add("email");
 		assertEquals(2, client.mapGetRegisters("myawesomemap", test).size());
 	}
+	
+	@Test
+	public void testRemoveRegisters() {
+		Map<String, String> add = new HashMap<String,String>();
+		add.put("reg1", "1");
+		add.put("reg2", "2");
+		client.mapAddUpdateRegisters("removeregisters", add);
+		
+		ArrayList<String> remove = new ArrayList<String>();
+		remove.add("reg1");
+		remove.add("reg2");
+		assertEquals(true, client.mapRemoveRegisters("removeregisters", remove));
+	}
 
 }
