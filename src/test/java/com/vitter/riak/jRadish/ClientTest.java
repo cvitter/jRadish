@@ -136,5 +136,14 @@ public class ClientTest {
 		map.put("false", false);
 		assertEquals(true, client.mapAddUpdateFlags("mapwithflags", map) );
 	}
+	
+	
+	@Test
+	public void testGetFlags() {
+		ArrayList<String> test = new ArrayList<String>();
+		test.add("true");
+		test.add("false");
+		assertEquals(2, client.mapGetFlags("mapwithflags", test).size());
+	}
 
 }

@@ -391,7 +391,38 @@ public class Client {
 	}
 	
 	
-	
+	/**
+	 * mapGetFlags - 
+	 * @param key
+	 * @param flags
+	 * @return
+	 */
+	public Map<String, Boolean> mapGetFlags(String key, ArrayList<String> flags) {
+		if (key != null && flags.size() > 0) {
+			Map<String, Boolean> returnVal = new HashMap<String, Boolean>();
+
+			Location location = new Location(new Namespace(conn.getMapBucketType(), conn.getMapBucket()), key);
+			FetchMap fetch = new FetchMap.Builder(location).build();
+			FetchMap.Response response;
+			try {
+				response = conn.getRiakClient().execute(fetch);
+				RiakMap map = response.getDatatype();
+				for (String flag : flags)
+				{
+					if (map.getFlag(flag) != null) {
+						boolean val = map.getFlag(flag) != null;
+						returnVal.put(flag, val);
+					}
+				}
+				return returnVal;
+			} catch (Exception e) {
+				e.printStackTrace();
+				return null;
+			}
+		} else {
+			return null;
+		}
+	}
 	
 	
 	
