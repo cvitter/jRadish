@@ -273,33 +273,7 @@ public class Client {
 	
 	
 	
-	/**
-	 * mapAddUpdateRegisters - Adds or updates registers in the specified map
-	 * @param key
-	 * @param values
-	 * @return true if successful
-	 */
-	public boolean mapAddUpdateRegisters(String key, Map<String,String> values) {
-		if (key != null && values.size() > 0) {
-			try {
-				Location location = new Location(new Namespace(conn.getMapBucketType(), conn.getMapBucket()), key);
-				MapUpdate mu = new MapUpdate();
-				for (Map.Entry<String, String> entry : values.entrySet()) {
-					mu.update(entry.getKey(), new RegisterUpdate(entry.getValue()));
-				}
-		        UpdateMap update = new UpdateMap
-		        	.Builder(location, mu)
-		        	.build();
-		        conn.getRiakClient().execute(update);
-				return true;
-			}
-			catch (Exception e) {
-				e.printStackTrace();
-				return false;
-			}
-		}
-		return false;
-	}
+
 	
 	
 	/**
@@ -344,10 +318,10 @@ public class Client {
 	}
 	
 	/**
-	 * mapRemoveFlags
+	 * mapRemoveFlags - Remove one or more flags from a map
 	 * @param key
 	 * @param registers
-	 * @return
+	 * @return true if successful
 	 */
 	public boolean mapRemoveFlags(String key, ArrayList<String> flags) {
 		return mapRemoveOperations(key, flags, RiakDataType.FLAG);
@@ -402,20 +376,46 @@ public class Client {
 	}
 	
 	
+	
+	
 	/**
-	 * mapAddUpdateFlags - 
+	 * mapModifyFlags - 
 	 * @param key
 	 * @param values
 	 * @return
 	 */
-	public boolean mapAddUpdateFlags(String key, Map<String,Boolean> values) {
+	public boolean mapModifyFlags(String key, Map<String,Object> values) {
+		return mapModifyFlagsAndRegisters(key, values, RiakDataType.FLAG);
+	}
+	
+	/**
+	 * mapModifyRegisters - Adds or updates registers in the specified map
+	 * @param key
+	 * @param values
+	 * @return true if successful
+	 */
+	public boolean mapModifyRegisters(String key, Map<String,Object> values) {
+		return mapModifyFlagsAndRegisters(key, values, RiakDataType.REGISTER);
+	}
+	
+	
+	private boolean mapModifyFlagsAndRegisters(String key, Map<String,Object> values, RiakDataType type) {
 		if (key != null && values.size() > 0) {
 			try {
 				Location location = new Location(new Namespace(conn.getMapBucketType(), conn.getMapBucket()), key);
 				MapUpdate mu = new MapUpdate();
-				for (Map.Entry<String, Boolean> entry : values.entrySet()) {
-					mu.update(entry.getKey(), new FlagUpdate(entry.getValue()));
+				
+				for (Map.Entry<String, Object> entry : values.entrySet()) {
+					switch (type) {
+					case FLAG:
+						mu.update(entry.getKey(), new FlagUpdate((Boolean) entry.getValue()));
+						break;
+					case REGISTER:
+						mu.update(entry.getKey(), new RegisterUpdate(entry.getValue().toString()));
+						break;
+					}
 				}
+				
 		        UpdateMap update = new UpdateMap
 		        	.Builder(location, mu)
 		        	.build();
@@ -429,6 +429,9 @@ public class Client {
 		}
 		return false;
 	}
+	
+	
+	
 	
 	
 	/**

@@ -101,10 +101,10 @@ public class ClientTest {
 
 	@Test
 	public void testMapAddUpdateRegisters() {
-		Map<String, String> map = new HashMap<String,String>();
+		Map<String, Object> map = new HashMap<String,Object>();
 		map.put("username", "testuser");
 		map.put("email", "test@user.email");
-		assertEquals(true, client.mapAddUpdateRegisters("myawesomemap", map) );
+		assertEquals(true, client.mapModifyRegisters("myawesomemap", map) );
 	}
 
 	@Test
@@ -117,10 +117,10 @@ public class ClientTest {
 	
 	@Test
 	public void testRemoveRegisters() {
-		Map<String, String> add = new HashMap<String,String>();
+		Map<String, Object> add = new HashMap<String,Object>();
 		add.put("reg1", "1");
 		add.put("reg2", "2");
-		client.mapAddUpdateRegisters("removeregisters", add);
+		client.mapModifyRegisters("removeregisters", add);
 		
 		ArrayList<String> remove = new ArrayList<String>();
 		remove.add("reg1");
@@ -131,10 +131,10 @@ public class ClientTest {
 	
 	@Test
 	public void testMapAddUpdateFlags() {
-		Map<String, Boolean> map = new HashMap<String,Boolean>();
+		Map<String, Object> map = new HashMap<String,Object>();
 		map.put("true", true);
 		map.put("false", false);
-		assertEquals(true, client.mapAddUpdateFlags("mapwithflags", map) );
+		assertEquals(true, client.mapModifyFlags("mapwithflags", map) );
 	}
 	
 	
@@ -148,10 +148,10 @@ public class ClientTest {
 	
 	@Test
 	public void testRemovFlags() {
-		Map<String, Boolean> add = new HashMap<String,Boolean>();
+		Map<String, Object> add = new HashMap<String,Object>();
 		add.put("flag1", true);
 		add.put("flag2", false);
-		client.mapAddUpdateFlags("removeflags", add);
+		client.mapModifyFlags("removeflags", add);
 		
 		ArrayList<String> remove = new ArrayList<String>();
 		remove.add("flag1");
