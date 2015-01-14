@@ -101,7 +101,7 @@ public class ClientTest {
 
 	@Test
 	public void testMapAddUpdateRegisters() {
-		Map<String, Object> map = new HashMap<String,Object>();
+		Map<String, String> map = new HashMap<String,String>();
 		map.put("username", "testuser");
 		map.put("email", "test@user.email");
 		assertEquals(true, client.mapModifyRegisters("myawesomemap", map) );
@@ -117,7 +117,7 @@ public class ClientTest {
 	
 	@Test
 	public void testRemoveRegisters() {
-		Map<String, Object> add = new HashMap<String,Object>();
+		Map<String, String> add = new HashMap<String,String>();
 		add.put("reg1", "1");
 		add.put("reg2", "2");
 		client.mapModifyRegisters("removeregisters", add);
@@ -131,7 +131,7 @@ public class ClientTest {
 	
 	@Test
 	public void testMapAddUpdateFlags() {
-		Map<String, Object> map = new HashMap<String,Object>();
+		Map<String, Boolean> map = new HashMap<String,Boolean>();
 		map.put("true", true);
 		map.put("false", false);
 		assertEquals(true, client.mapModifyFlags("mapwithflags", map) );
@@ -148,7 +148,7 @@ public class ClientTest {
 	
 	@Test
 	public void testRemovFlags() {
-		Map<String, Object> add = new HashMap<String,Object>();
+		Map<String, Boolean> add = new HashMap<String,Boolean>();
 		add.put("flag1", true);
 		add.put("flag2", false);
 		client.mapModifyFlags("removeflags", add);

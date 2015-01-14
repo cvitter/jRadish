@@ -306,6 +306,43 @@ public class Client {
 		}
 	}
 	
+	/**
+	 * mapGetFlags - 
+	 * @param key
+	 * @param flags
+	 * @return
+	 */
+	public Map<String, Boolean> mapGetFlags(String key, ArrayList<String> flags) {
+		if (key != null && flags.size() > 0) {
+			Map<String, Boolean> returnVal = new HashMap<String, Boolean>();
+
+			Location location = new Location(new Namespace(conn.getMapBucketType(), conn.getMapBucket()), key);
+			FetchMap fetch = new FetchMap.Builder(location).build();
+			FetchMap.Response response;
+			try {
+				response = conn.getRiakClient().execute(fetch);
+				RiakMap map = response.getDatatype();
+				for (String flag : flags)
+				{
+					if (map.getFlag(flag) != null) {
+						boolean val = map.getFlag(flag) != null;
+						returnVal.put(flag, val);
+					}
+				}
+				return returnVal;
+			} catch (Exception e) {
+				e.printStackTrace();
+				return null;
+			}
+		} else {
+			return null;
+		}
+	}
+	
+	
+	
+	
+	
 	
 	/**
 	 * mapRemoveRegisters - Remove one or more register from a map
@@ -384,8 +421,12 @@ public class Client {
 	 * @param values
 	 * @return
 	 */
-	public boolean mapModifyFlags(String key, Map<String,Object> values) {
-		return mapModifyFlagsAndRegisters(key, values, RiakDataType.FLAG);
+	public boolean mapModifyFlags(String key, Map<String,Boolean> values) {
+		Map<String,Object> transformed = new HashMap<String,Object>();
+		for (Map.Entry<String, Boolean> entry : values.entrySet()) {
+			transformed.put(entry.getKey(), entry.getValue());
+		}
+		return mapModifyFlagsAndRegisters(key, transformed, RiakDataType.FLAG);
 	}
 	
 	/**
@@ -394,8 +435,12 @@ public class Client {
 	 * @param values
 	 * @return true if successful
 	 */
-	public boolean mapModifyRegisters(String key, Map<String,Object> values) {
-		return mapModifyFlagsAndRegisters(key, values, RiakDataType.REGISTER);
+	public boolean mapModifyRegisters(String key, Map<String,String> values) {
+		Map<String,Object> transformed = new HashMap<String,Object>();
+		for (Map.Entry<String, String> entry : values.entrySet()) {
+			transformed.put(entry.getKey(), entry.getValue());
+		}
+		return mapModifyFlagsAndRegisters(key, transformed, RiakDataType.REGISTER);
 	}
 	
 	
@@ -413,6 +458,12 @@ public class Client {
 					case REGISTER:
 						mu.update(entry.getKey(), new RegisterUpdate(entry.getValue().toString()));
 						break;
+					case COUNTER:
+						break;
+					case MAP:
+						break;
+					case SET:
+						break;
 					}
 				}
 				
@@ -429,44 +480,6 @@ public class Client {
 		}
 		return false;
 	}
-	
-	
-	
-	
-	
-	/**
-	 * mapGetFlags - 
-	 * @param key
-	 * @param flags
-	 * @return
-	 */
-	public Map<String, Boolean> mapGetFlags(String key, ArrayList<String> flags) {
-		if (key != null && flags.size() > 0) {
-			Map<String, Boolean> returnVal = new HashMap<String, Boolean>();
-
-			Location location = new Location(new Namespace(conn.getMapBucketType(), conn.getMapBucket()), key);
-			FetchMap fetch = new FetchMap.Builder(location).build();
-			FetchMap.Response response;
-			try {
-				response = conn.getRiakClient().execute(fetch);
-				RiakMap map = response.getDatatype();
-				for (String flag : flags)
-				{
-					if (map.getFlag(flag) != null) {
-						boolean val = map.getFlag(flag) != null;
-						returnVal.put(flag, val);
-					}
-				}
-				return returnVal;
-			} catch (Exception e) {
-				e.printStackTrace();
-				return null;
-			}
-		} else {
-			return null;
-		}
-	}
-	
 	
 	
 	
