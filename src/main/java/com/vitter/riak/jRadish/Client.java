@@ -28,7 +28,6 @@ import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.RiakObject;
 import com.basho.riak.client.core.query.crdt.types.RiakCounter;
 import com.basho.riak.client.core.query.crdt.types.RiakMap;
-import com.basho.riak.client.core.query.crdt.types.RiakRegister;
 import com.basho.riak.client.core.util.BinaryValue;
 
 
@@ -120,7 +119,7 @@ public class Client {
 				Location location = new Location(new Namespace(conn.getCounterBucketType(), conn.getCounterBucket()), key);
 				CounterUpdate cu = new CounterUpdate(increment);
 				UpdateCounter update = new UpdateCounter
-						.Builder(location, cu)
+					.Builder(location, cu)
 		        	.build();
 				conn.getRiakClient().execute(update);
 			}
