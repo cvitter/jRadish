@@ -33,6 +33,13 @@ import com.basho.riak.client.core.util.BinaryValue;
 
 
 public class Client {
+	
+	public enum RiakDataType {
+		COUNTER, 
+		FLAG, 
+		REGISTER,
+		SET
+	};
 
 	private Connection conn;
 	
@@ -421,6 +428,43 @@ public class Client {
 			}
 		} else {
 			return null;
+		}
+	}
+	
+	
+	/**
+	 * mapRemoveFlags
+	 * @param key
+	 * @param registers
+	 * @return
+	 */
+	public boolean mapRemoveFlags(String key, ArrayList<String> flags) {
+		if (key != null && flags.size() > 0) {
+			Location location = new Location(new Namespace(conn.getMapBucketType(), conn.getMapBucket()), key);
+			FetchMap fetch = new FetchMap
+				.Builder(location)
+	        	.build();
+			try {
+				FetchMap.Response response = conn.getRiakClient().execute(fetch);
+				Context ctx = response.getContext();
+				MapUpdate mapUpdate = new MapUpdate();
+				for (String flag : flags) {
+					mapUpdate.removeFlag(flag);
+				}
+				UpdateMap update = new UpdateMap
+					.Builder(location, mapUpdate)
+		        	.withContext(ctx)
+		        	.build();
+				conn.getRiakClient().execute(update);
+				return true;
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+				return false;
+			}
+		}
+		else {		
+			return false;
 		}
 	}
 	

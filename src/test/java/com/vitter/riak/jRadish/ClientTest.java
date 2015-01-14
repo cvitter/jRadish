@@ -145,5 +145,18 @@ public class ClientTest {
 		test.add("false");
 		assertEquals(2, client.mapGetFlags("mapwithflags", test).size());
 	}
+	
+	@Test
+	public void testRemovFlags() {
+		Map<String, Boolean> add = new HashMap<String,Boolean>();
+		add.put("flag1", true);
+		add.put("flag2", false);
+		client.mapAddUpdateFlags("removeflags", add);
+		
+		ArrayList<String> remove = new ArrayList<String>();
+		remove.add("flag1");
+		remove.add("flag2");
+		assertEquals(true, client.mapRemoveFlags("removeflags", remove));
+	}
 
 }
