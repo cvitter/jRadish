@@ -36,7 +36,8 @@ public class Client {
 	
 	public enum RiakDataType {
 		COUNTER, 
-		FLAG, 
+		FLAG,
+		MAP,
 		REGISTER,
 		SET
 	};
@@ -339,7 +340,21 @@ public class Client {
 	 * @return true if successful
 	 */
 	public boolean mapRemoveRegisters(String key, ArrayList<String> registers) {
-		if (key != null && registers.size() > 0) {
+		return mapRemoveOperations(key, registers, RiakDataType.REGISTER);
+	}
+	
+	/**
+	 * mapRemoveFlags
+	 * @param key
+	 * @param registers
+	 * @return
+	 */
+	public boolean mapRemoveFlags(String key, ArrayList<String> flags) {
+		return mapRemoveOperations(key, flags, RiakDataType.FLAG);
+	}
+	
+	private boolean mapRemoveOperations(String key, ArrayList<String> fields, RiakDataType type) {
+		if (key != null && fields.size() > 0) {
 			Location location = new Location(new Namespace(conn.getMapBucketType(), conn.getMapBucket()), key);
 			FetchMap fetch = new FetchMap
 				.Builder(location)
@@ -348,9 +363,27 @@ public class Client {
 				FetchMap.Response response = conn.getRiakClient().execute(fetch);
 				Context ctx = response.getContext();
 				MapUpdate mapUpdate = new MapUpdate();
-				for (String register : registers) {
-					mapUpdate.removeRegister(register);
+				
+				for (String field : fields) {
+					switch (type) {
+						case COUNTER:
+							mapUpdate.removeCounter(field);
+							break;
+						case FLAG:
+							mapUpdate.removeFlag(field);
+							break;
+						case MAP:
+							mapUpdate.removeMap(field);
+							break;
+						case SET:
+							mapUpdate.removeSet(field);
+							break;
+						case REGISTER:
+							mapUpdate.removeRegister(field);
+							break;
+					}
 				}
+				
 				UpdateMap update = new UpdateMap
 					.Builder(location, mapUpdate)
 		        	.withContext(ctx)
@@ -432,41 +465,7 @@ public class Client {
 	}
 	
 	
-	/**
-	 * mapRemoveFlags
-	 * @param key
-	 * @param registers
-	 * @return
-	 */
-	public boolean mapRemoveFlags(String key, ArrayList<String> flags) {
-		if (key != null && flags.size() > 0) {
-			Location location = new Location(new Namespace(conn.getMapBucketType(), conn.getMapBucket()), key);
-			FetchMap fetch = new FetchMap
-				.Builder(location)
-	        	.build();
-			try {
-				FetchMap.Response response = conn.getRiakClient().execute(fetch);
-				Context ctx = response.getContext();
-				MapUpdate mapUpdate = new MapUpdate();
-				for (String flag : flags) {
-					mapUpdate.removeFlag(flag);
-				}
-				UpdateMap update = new UpdateMap
-					.Builder(location, mapUpdate)
-		        	.withContext(ctx)
-		        	.build();
-				conn.getRiakClient().execute(update);
-				return true;
-			}
-			catch (Exception e) {
-				e.printStackTrace();
-				return false;
-			}
-		}
-		else {		
-			return false;
-		}
-	}
+	
 	
 	
 	
