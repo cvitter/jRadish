@@ -57,13 +57,11 @@ public class ClientTest {
 		}
 	}
 	
-	
 	@Test
 	public void testDeleteCounter() {
 		client.incrementCounter("countertodelete", 2L);
 		assertEquals(true, client.deleteCounter("countertodelete") );
 	}
-
 	
 	@Test
 	public void testAddToSet() {
@@ -82,12 +80,10 @@ public class ClientTest {
 		assertEquals(true, client.removeFromSet("removefrom", addTo) );
 	}
 	
-	
 	@Test
 	public void testGetEmptySet() {
 		assertEquals(null, client.getSet("emptyset") );
 	}
-	
 	
 	@Test
 	public void testDeleteSet() {
@@ -97,7 +93,6 @@ public class ClientTest {
 		client.addToSet("settodelete", test);
 		assertEquals(true, client.deleteSet("settodelete") );
 	}
-	
 
 	@Test
 	public void testMapAddUpdateRegisters() {
@@ -128,7 +123,6 @@ public class ClientTest {
 		assertEquals(true, client.mapRemoveRegisters("removeregisters", remove));
 	}
 	
-	
 	@Test
 	public void testMapAddUpdateFlags() {
 		Map<String, Boolean> map = new HashMap<String,Boolean>();
@@ -136,7 +130,6 @@ public class ClientTest {
 		map.put("false", false);
 		assertEquals(true, client.mapModifyFlags("mapwithflags", map) );
 	}
-	
 	
 	@Test
 	public void testGetFlags() {
